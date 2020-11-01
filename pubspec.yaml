@@ -30,6 +30,8 @@ dependencies:
   flutter_share:
   path_provider:
   share: ^0.6.2+3
+  logger: ^0.6.0
+  scoped_model : ^ 1.0.1
 
 
   # The following adds the Cupertino Icons font to your application.

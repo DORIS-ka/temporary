@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-import "package:http/http.dart" as http;
-import 'package:url_launcher/url_launcher.dart';
-import 'dart:math';
+import 'package:logger/logger.dart';
 import 'package:share/share.dart';
+import 'logger.dart';
+
+Logger getLogger(String className) {
+  return Logger(printer: SimpleLogPrinter(className));
+}
+
+
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+  final log = Logger();
+
   @override
   Widget build(BuildContext context) {
+    final log = getLogger('PostService');
+    log.i('The user entered the BeHealthy app.');
     return MaterialApp(
       title: 'Be Healthy',
       theme: ThemeData(
@@ -17,14 +25,6 @@ class MyApp extends StatelessWidget {
       ),
       home: MyHomePage(),
     );
-  }
-}
-
-launchURL(String url) async {
-  if (await canLaunch(url)) {
-    await launch(url, forceWebView: true);
-  } else {
-    throw 'Could not launch $url';
   }
 }
 
@@ -40,8 +40,10 @@ class DrawerMain extends StatefulWidget {
 }
 
 class DrawerMainState extends State<DrawerMain> {
+  final log = Logger();
   @override
   Widget build(BuildContext context) {
+    log.i('The user has opened the side menu.');
     return Drawer(
         child: ListView(padding: EdgeInsets.zero, children: <Widget>[
       DrawerHeader(
@@ -85,8 +87,12 @@ class DrawerMainState extends State<DrawerMain> {
 }
 
 class MyHomePage extends StatelessWidget {
+  // final counter = ScopedModel.of<CounterModel>(context, rebuildOnChange: true).counter;
+  final log = Logger();
+
   @override
   Widget build(BuildContext context) {
+    log.i('The user went to the About page');
     return Scaffold(
       appBar: AppBar(
         title: Text('About'),
@@ -102,6 +108,7 @@ class MyHomePage extends StatelessWidget {
                   context,
                   'In the future, you will have the '
                   'opportunity to send your results to trainer '),
+
             ),
             Image(
               image: AssetImage('image/mirror.jpg'),
@@ -129,7 +136,7 @@ class MyHomePage extends StatelessWidget {
 
   share(BuildContext context, String alligator) {
     final RenderBox box = context.findRenderObject();
-
+    log.i('The user is sending message');
     Share.share("$alligator",
         subject: 'Under development',
         sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
@@ -143,6 +150,7 @@ class TrainingLevelPage extends StatefulWidget {
 
 class _TrainingLevelPageState extends State<TrainingLevelPage> {
   final List<String> title = <String>['Beginner', 'Intermediate', 'Advanced'];
+  final log = Logger();
 
   final List<String> image = <String>[
     'image/beginner.jpg',
@@ -173,6 +181,7 @@ class _TrainingLevelPageState extends State<TrainingLevelPage> {
 
   @override
   Widget build(BuildContext context) {
+    log.i('The user went to the Training page');
     return Scaffold(
       appBar: AppBar(
         title: Text('Training'),
@@ -196,6 +205,7 @@ class _TrainingLevelPageState extends State<TrainingLevelPage> {
                         height: 350.0,
                       ),
                       onTap: () {
+                        log.i('The user has chosen a level '+title[index]+' workout');
                         Navigator.pop(context);
                         Navigator.push(
                           context,
@@ -246,6 +256,7 @@ class WorkoutPage extends StatefulWidget {
 }
 
 class _WorkoutPageState extends State<WorkoutPage> {
+  final log = Logger();
   int _index = 0;
   String _pred = 'image/start.gif';
   String _button_value = 'start';
@@ -256,10 +267,12 @@ class _WorkoutPageState extends State<WorkoutPage> {
         _pred = widget.images[_index];
         _index += 1;
         _button_value = 'next';
+        log.i('The user has performed the $_index exercise.');
       } else {
         _pred = widget.images[_index];
         _index = 0;
         _button_value = 'start over';
+        log.i('The user has finished training.');
       }
     });
   }
@@ -286,6 +299,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
+          log.i('The user has started training.');
           _change();
         },
         label: Text('$_button_value'),
