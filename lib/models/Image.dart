@@ -7,4 +7,8 @@ class ImageModel {
 
   ImageModel({this.id, this.path, this.level_id});
 
+  @override
+  String toString() {
+    return path;
+  }
 }

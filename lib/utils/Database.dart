@@ -75,7 +75,6 @@ class DBProvider {
     final Database db = await database;
     print('GET Levels METHOD');
 
-    // Query the table for all The Dogs.
     final List<Map<String, dynamic>> maps = await db.query('Level');
 
     var list = List.generate(maps.length, (i) {
@@ -85,18 +84,13 @@ class DBProvider {
         image: maps[i]['image'],
       );
     });
-    list.forEach((element) {
-      print(element.name);
-    });
-    print('LENGTH: ${list.length}');
     return list;
   }
-  Future<List<ImageModel>> getImage() async {
+  Future<List<ImageModel>> getImages(int levelId) async {
     // Get a reference to the database.
     final Database db = await database;
     print('GET getImage METHOD');
 
-    // Query the table for all The Dogs.
     final List<Map<String, dynamic>> maps = await db.query('Image');
 
     var list = List.generate(maps.length, (i) {
@@ -106,13 +100,7 @@ class DBProvider {
         level_id: maps[i]['level_id'],
       );
     });
-    list.forEach((element) {
-      print('+++++++++++++++++++++++++++++++++++++');
-      print(element.path);
-      print(element.level_id);
-    });
-    print(list);
-    print('LENGTH: ${list.length}');
-    return list;
+
+    return list.where((image) => image.level_id == levelId).toList();
   }
 }
