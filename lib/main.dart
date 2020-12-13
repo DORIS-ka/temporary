@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:share/share.dart';
 import 'logger.dart';
-
+import './utils/Database.dart';
+import './models/levelModel.dart';
+import './models/Image.dart';
 Logger getLogger(String className) {
   return Logger(printer: SimpleLogPrinter(className));
 }
@@ -41,6 +43,15 @@ class DrawerMain extends StatefulWidget {
 
 class DrawerMainState extends State<DrawerMain> {
   final log = Logger();
+
+  createInitials() async {
+    //  _defaultList.forEach((element) async {
+    //    await DBProvider.db.createLevel(element);
+    // });
+    //  _default_images.forEach((element) async {
+    //    await DBProvider.db.createImage(element);
+    //  });
+  }
   @override
   Widget build(BuildContext context) {
     log.i('The user has opened the side menu.');
@@ -148,10 +159,30 @@ class TrainingLevelPage extends StatefulWidget {
   _TrainingLevelPageState createState() => _TrainingLevelPageState();
 }
 
+
 class _TrainingLevelPageState extends State<TrainingLevelPage> {
   final List<String> title = <String>['Beginner', 'Intermediate', 'Advanced'];
   final log = Logger();
+  Future levelList;
+  List<ImageModel> imageList = [];
 
+
+  // @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // createInitials();
+    levelList = getLevel();
+    getImage();
+    // print(levelList);
+  }
+  getLevel() async {
+    final _levelList = await DBProvider.db.getLevel();
+    return _levelList;
+  }
+  getImage() async {
+     imageList  =  await DBProvider.db.getImage();
+  }
   final List<String> image = <String>[
     'image/beginner.jpg',
     'image/intermediate.jpg',
@@ -188,42 +219,49 @@ class _TrainingLevelPageState extends State<TrainingLevelPage> {
       ),
       drawer: DrawerMain(selected: "level"),
       body: Center(
-        child: ListView.builder(
-          itemCount: title.length,
-          itemBuilder: (BuildContext context, int index) {
-            return Card(
-              child: Container(
-                padding: EdgeInsets.all(16.0),
-                child: Column(
-                  children: <Widget>[
-                    //
-                    ListTile(
-                      leading: Image(
-                        image: AssetImage(image[index]),
-                        fit: BoxFit.fitHeight,
-                        width: 320.0,
-                        height: 350.0,
-                      ),
-                      onTap: () {
-                        log.i('The user has chosen a level '+title[index]+' workout');
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => sUrl[index]),
-                        );
-                      },
-                    ),
-                    Text(
-                      title[index],
-                      style: TextStyle(
-                          fontSize: 14.0, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+        child: FutureBuilder(
+          future: levelList,
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            List<Widget> children;
+            if(snapshot.hasData) {
+              // List<levelModel> _levelList = [];
+              children = snapshot.data.map<Widget>((e) => Card(
+                child: Container(
+                  padding: EdgeInsets.all(16.0),
+                  child: Column(
+                      children: <Widget>[
+                  //
+                  ListTile(
+                  leading: Image(
+                      image: AssetImage(e.image),
+                  fit: BoxFit.fitHeight,
+                  width: 320.0,
+                  height: 350.0,
                 ),
+                // onTap: () {
+                //   log.i('The user has chosen a level '+e.name+' workout');
+                //   Navigator.pop(context);
+                //   Navigator.push(
+                //     context,
+                //     MaterialPageRoute(builder: (context) => sUrl[index]),
+                //   );
+                // },
+              ),
+                Text(
+                  e.name,
+                  style: TextStyle(
+                      fontSize: 14.0, fontWeight: FontWeight.bold),
+                ),
+              ])))).toList();
+
+            }
+            return Center(
+              child: Column(
+                children: children,
               ),
             );
-          },
-        ),
+          }
+        )
       ),
     );
   }
