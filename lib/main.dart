@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:share/share.dart';
@@ -5,6 +7,7 @@ import 'logger.dart';
 import './utils/Database.dart';
 import './models/levelModel.dart';
 import './models/Image.dart';
+import 'package:http/http.dart' as http;
 
 Logger getLogger(String className) {
   return Logger(printer: SimpleLogPrinter(className));
@@ -43,13 +46,10 @@ class DrawerMain extends StatefulWidget {
 class DrawerMainState extends State<DrawerMain> {
   final log = Logger();
 
-  createInitials() async {
-    //  _defaultList.forEach((element) async {
-    //    await DBProvider.db.createLevel(element);
-    // });
-    //  _default_images.forEach((element) async {
-    //    await DBProvider.db.createImage(element);
-    //  });
+  @override
+  void initState() {
+    super.initState();
+    print('234324324');
   }
 
   @override
@@ -57,42 +57,64 @@ class DrawerMainState extends State<DrawerMain> {
     log.i('The user has opened the side menu.');
     return Drawer(
         child: ListView(padding: EdgeInsets.zero, children: <Widget>[
-          DrawerHeader(
-            child: Text(
-              'Be Healthy',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 32.0,
-              ),
-            ),
-            decoration: BoxDecoration(
-              color: Colors.red,
-            ),
-          ),
-          ListTile(
-            selected: widget.selected == 'about',
-            leading: Icon(Icons.info),
-            title: Text('About'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => MyHomePage()),
+      DrawerHeader(
+        child: FutureBuilder(
+            future: http.get("http://worldclockapi.com/api/json/est/now/"),
+            builder: (context, snapshot) {
+              DateTime currentDate;
+
+              if (snapshot.hasData)
+                currentDate = DateTime.parse(
+                    jsonDecode(snapshot.data.body)["currentDateTime"]);
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Be Healthy',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 32.0,
+                    ),
+                  ),
+                  Text(
+                    "${currentDate.day}-${currentDate.month}-${currentDate.year}",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  )
+                ],
               );
-            },
-          ),
-          ListTile(
-            selected: widget.selected == 'level',
-            leading: Icon(Icons.list),
-            title: Text('Training'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => TrainingLevelPage()),
-              );
-            },
-          ),
+            }),
+        decoration: BoxDecoration(
+          color: Colors.red,
+        ),
+      ),
+      ListTile(
+        selected: widget.selected == 'about',
+        leading: Icon(Icons.info),
+        title: Text('About'),
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MyHomePage()),
+          );
+        },
+      ),
+      ListTile(
+        selected: widget.selected == 'level',
+        leading: Icon(Icons.list),
+        title: Text('Training'),
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => TrainingLevelPage()),
+          );
+        },
+      ),
     ]));
   }
 }
@@ -203,11 +225,15 @@ class _TrainingLevelPageState extends State<TrainingLevelPage> {
                                     height: 350.0,
                                   ),
                                   onTap: () {
-                                    log.i('The user has chosen a level '+e.name+' workout');
+                                    log.i('The user has chosen a level ' +
+                                        e.name +
+                                        ' workout');
                                     Navigator.pop(context);
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (context) => WorkoutPage(e.id)),
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              WorkoutPage(e.id)),
                                     );
                                   },
                                 ),
@@ -265,9 +291,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
   @override
   void initState() {
     super.initState();
-     DBProvider.db.getImages(widget.levelId).then((models) {
-       _images = models.map((e) => e.path).toList();
-     });
+    DBProvider.db.getImages(widget.levelId).then((models) {
+      _images = models.map((e) => e.path).toList();
+    });
   }
 
   void _change() {
